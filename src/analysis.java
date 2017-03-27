@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ public class analysis {
 	public static void main(String[] args) throws IOException{
 		
 		HashMap<String,Integer> commiters = new HashMap<String,Integer>(); 
+		ArrayList<String> branches = new ArrayList<String>();
 		String directory = "C:\\Users\\Aruil\\Documents\\temp_git_repo\\jgit";
 		Process proc = null;
 		ProcessBuilder pb;
@@ -21,8 +24,6 @@ public class analysis {
 		BufferedReader stdInput = new BufferedReader(new 
 		     InputStreamReader(proc.getInputStream()));
 
-//		BufferedReader stdError = new BufferedReader(new 
-//		     InputStreamReader(proc.getErrorStream()));
 
 		// read the output from the command
 		System.out.println("Here is the standard output of the command:\n");
@@ -62,6 +63,8 @@ public class analysis {
 		while ((s = stdInput.readLine()) != null) {
 		 //   System.out.println(s);
 		    num_of_branches++;
+		    String[] cleanstr = s.split(" ");
+		    branches.add(cleanstr[1]);
 		}
 		System.out.println("Number of branches in repository: " + num_of_branches);
 		stdInput.close();
@@ -81,18 +84,8 @@ public class analysis {
 		
 		
 		pb = new ProcessBuilder("git","--no-pager","log","--pretty=tformat:%aN","--all");
-//		pb = new ProcessBuilder("git","--no-pager","shortlog","-s","-n");
-
 		pb.directory(new File(directory));
-
 		proc = pb.start();
-//	    try {
-//			proc.waitFor();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
 		stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));		
 
 		while ((s = stdInput.readLine()) != null) {
@@ -116,11 +109,39 @@ public class analysis {
 //		
 		stdInput.close();
 		
-		
-		// read any errors from the attempted command
-//		System.out.println("Here is the standard error of the command (if any):\n");
-//		while ((s = stdError.readLine()) != null) {
-//		    System.out.println(s);
-//		}
+		//4th
+		ArrayList<BranchInfo> branchInfoArray = new ArrayList<BranchInfo>();
+		for (String str: branches){
+			
+			BranchInfo branchinfo = new BranchInfo();
+			branchinfo.BranchName = str;
+			CommitInfo commitinfo;
+			pb = new ProcessBuilder("git","--no-pager","log","--pretty=format:'%H%n%aN%n%ad%n%s%n%n%b%nendofbody'","--date-order",str,"--reverse");
+			pb.directory(new File(directory));
+			proc = pb.start();
+			stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));	
+			
+			while ((s = stdInput.readLine()) != null) {
+				
+				commitinfo = new CommitInfo();
+				commitinfo.id = s;
+				s = stdInput.readLine();
+				commitinfo.author = s;
+				s = stdInput.readLine();
+				commitinfo.date = s;
+				
+				StringBuilder strbuilder = new StringBuilder("");
+				while(!(s=stdInput.readLine()).equals("endofbody")){
+					strbuilder.append(s);
+				}
+				commitinfo.message = strbuilder.toString();
+				
+				branchinfo.CommitList.add(commitinfo);
+			}
+			branchinfo.CreationDate = branchinfo.CommitList.get(0).date;
+			branchinfo.LastModified = branchinfo.CommitList.get(branchinfo.CommitList.size()-1).date;
+			branchInfoArray.add(branchinfo);
+		}
+
 	}
 }
