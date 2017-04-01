@@ -1,10 +1,21 @@
+import java.awt.List;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
+
 
 public class InjectCode extends analysis{
 	
@@ -25,9 +36,27 @@ public class InjectCode extends analysis{
 						"<h4>$BranchNameReport</h4></div>" +
 						"<div class='panel-body'>" +
 						"$panelbody</div></div></div></div>";
+		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("template.html");
+		byte[] buffer = new byte[1024];
+		int count = 0;
+		File tfile = new File("template.html");
+		FileOutputStream outf = new FileOutputStream(tfile);
+		while((count = in.read(buffer)) != -1){
+			outf.write(buffer, 0, count);
+		}
+		outf.close();
+		in = ClassLoader.getSystemClassLoader().getResourceAsStream("commit_template.html");
+		File ctfile = new File("commit_template.html");
+		outf = new FileOutputStream(ctfile);
+		count = 0;
+		while((count = in.read(buffer)) != -1){
+			outf.write(buffer, 0, count);
+		}
+		outf.close();
 		
-		String htmlString = new String(Files.readAllBytes(Paths.get("src/template.html")));
-		String commitTemplate = new String(Files.readAllBytes(Paths.get("src/commit_template.html")));
+		String htmlString = new String(Files.readAllBytes(Paths.get("template.html")));
+		
+		String commitTemplate = new String(Files.readAllBytes(Paths.get("commit_template.html")));
 		
 		htmlString = htmlString.replace("$numOfFiles", num_of_files.toString());
 		htmlString = htmlString.replace("$numOfLines", num_of_lines.toString());
@@ -134,5 +163,8 @@ public class InjectCode extends analysis{
 		PrintWriter out = new PrintWriter(s + "index.html");
 		out.print(htmlString);
 		out.close();
+		
+		Files.delete(tfile.toPath());
+		Files.delete(ctfile.toPath());
 	}
 }

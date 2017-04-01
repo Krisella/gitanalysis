@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class analysis {
 	static Integer num_of_branches;
 	static Integer num_of_tags;
 	
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException, URISyntaxException{
 		
 		String repoPath = args[0];
 		String outputPath = args[1];
