@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+<script src="http://cdn.oesmith.co.uk/morris-0.4.1.min.js"></script>
+<meta charset=utf-8 />
+    
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/styles.css" rel="stylesheet">
+<script src="js/lumino.glyphs.js"></script>
+
+</head>
+
+<body>
+
+	<div class="container">	
+
+
+	<ol class = "breadcrumb">
+   <li class='active'>Home</li>
+	</ol>
+
+		<div class="row">
+			<div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-red panel-widget ">
+					<div class="row no-padding">
+						<div class="col-sm-3 col-lg-5 widget-left">
+                            <svg class="glyph stroked blank document"><use xlink:href="#stroked-blank-document"/></svg>					
+                        </div>
+						<div class="col-sm-9 col-lg-7 widget-right">
+							<div class="large">$numOfFiles</div>
+							<div class="text-muted">Files in Repository</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-orange panel-widget">
+					<div class="row no-padding">
+						<div class="col-sm-3 col-lg-5 widget-left">
+                            <svg class="glyph stroked pencil"><use xlink:href="#stroked-pencil"/></svg>						
+                        </div>
+						<div class="col-sm-9 col-lg-7 widget-right">
+							<div class="large">$numOfLines</div>
+							<div class="text-muted">Lines in Repository</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-teal panel-widget">
+					<div class="row no-padding">
+						<div class="col-sm-3 col-lg-5 widget-left">
+                            <svg class="glyph stroked chevron right"><use xlink:href="#stroked-chevron-right"/></svg>						</div>
+						<div class="col-sm-9 col-lg-7 widget-right">
+							<div class="large">$numOfBranches</div>
+							<div class="text-muted">Branches in Repository</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-teal panel-widget">
+					<div class="row no-padding">
+						<div class="col-sm-3 col-lg-5 widget-left">
+                            <svg class="glyph stroked tag"><use xlink:href="#stroked-tag"/></svg>						
+                        </div>
+						<div class="col-sm-9 col-lg-7 widget-right">
+							<div class="large">$tags</div>
+							<div class="text-muted">Tags</div>
+						</div>
+					</div>
+				</div>
+			</div>
+            <div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-blue panel-widget">
+					<div class="row no-padding">
+						<div class="col-sm-3 col-lg-5 widget-left">
+                            <svg class="glyph stroked male user "><use xlink:href="#stroked-male-user"/></svg>						
+                        </div>
+						<div class="col-sm-9 col-lg-7 widget-right">
+							
+							<div class="large">$numOfCommitters</div>
+							<div class="text-muted">Committers</div>
+						</div>
+					</div>
+				</div>
+			</div>
+            <div class="col-xs-12 col-md-6 col-lg-4">
+				<div class="panel panel-red panel-widget">
+					<div class="row no-padding">
+						<div class="col-sm-3 col-lg-5 widget-left">
+                            <svg class="glyph stroked upload"><use xlink:href="#stroked-upload"/></svg>                        
+                        </div>
+						<div class="col-sm-9 col-lg-7 widget-right">
+							<div class="large">$numOfCommits</div>
+							<div class="text-muted">Commits</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.row-->
+		
+        
+
+    <div class="row">
+        <div class="panel panel-primary filterable">
+            <div class="panel-heading">
+                <h3 class="panel-title">Branches</h3> 
+                <h5 style='color:#ffffff'>A list of all the branches in the repository. Click for more details. </h5>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr class="filters">
+                        <th><input type="text" class="form-control" placeholder="Branch Name" disabled></th>
+                        <th><input type="text" class="form-control" placeholder="First Commit Date" disabled></th>
+                        <th><input type="text" class="form-control" placeholder="Last Modified" disabled></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $tableDates
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<br>
+<br>
+    
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+        	<h3 style='text-align: center;'>Percentage of Commits Per Author</h3>
+            <div id="donut1"></div>
+        </div>
+        <div class="col-xs-12 col-md-6">
+            <h3 style='text-align: center;'>Percentage of Commits Per Branch</h3>
+            <div id="donut2"></div>
+        </div>
+    </div>
+</div>
+
+<hr>
+<br>
+<div class="container">
+	<h3>Percentage of Commits Per Branch Per Author</h3>
+	<br><br>
+        $branchPanel
+ </div>
+    
+   <br>
+   <br>
+
+    <div class="container">
+
+        <div class="row">
+        <div class="panel panel-primary filterable">
+            <div class="panel-heading">
+                <h3 class="panel-title">Committers</h3>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr class="filters">
+                        <th><input type="text" class="form-control" placeholder="Committer" disabled></th>
+                        <th><input type="text" class="form-control" placeholder="Average Commits Per Day" disabled></th>
+                        <th><input type="text" class="form-control" placeholder="Average Commits Per Month" disabled></th>
+                        <th><input type="text" class="form-control" placeholder="Average Commits Per Year" disabled></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $committerDates
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+		<div class="row">
+			<div class="col-xs-12 col-sm-6">
+				<div class="panel panel-default">
+					<div class="panel-body easypiechart-panel">
+						<h4>Average Insertions Per Commiter</h4>
+						<div class="easypiechart" id="easypiechart-teal" data-percent="$insertions" ><span class="percent">$insertions</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+				<div class="panel panel-default">
+					<div class="panel-body easypiechart-panel">
+						<h4>Average Deletions Per Commiter</h4>
+						<div class="easypiechart" id="easypiechart-red" data-percent="$deletes" ><span class="percent">$deletes</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.row-->
+		</div>
+								
+    </div>
+    </div>
+	<script src="js/jquery-1.11.1.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/chart.min.js"></script>
+	<script src="js/chart-data.js"></script>
+	<script src="js/easypiechart.js"></script>
+	<script src="js/easypiechart-data.js"></script>
+	<script src="js/bootstrap-datepicker.js"></script>
+	<script>
+
+        
+         
+    Morris.Donut({
+  element: 'donut1',
+  data: [
+    $firstDonut
+  ]});
+        
+        Morris.Donut({
+  element: 'donut2',
+  data: [
+    $secondDonut
+  ]
+});
+
+        
+	</script>	
+
+</body>
+
+</html>

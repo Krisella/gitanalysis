@@ -30,7 +30,7 @@ class CommitInfo {
 		message = null;
 		date = null;
 		author = null;
-		tag = null;
+		tag = "";
 	}
 }
 

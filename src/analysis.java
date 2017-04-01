@@ -1,9 +1,13 @@
 import java.awt.List;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -16,14 +20,22 @@ public class analysis {
 	static ArrayList<BranchInfo> branchInfoArray;
 	static Integer numOfInsertions;
 	static Integer numOfDeletions;
+	static Integer num_of_files;
+	static Integer num_of_lines;
+	static Integer num_of_branches;
+	static Integer num_of_tags;
 	
 	public static void main(String[] args) throws IOException{
+		
+		String repoPath = args[0];
+		String outputPath = args[1];
 		
 		numOfInsertions = 0;
 		numOfDeletions = 0;
 		committers = new HashMap<String,Committer>(); 
 		branches = new ArrayList<String>();
-		String directory = "C:\\Users\\Aruil\\Documents\\temp_git_repo\\jgit";
+		
+		String directory = repoPath;
 		Process proc = null;
 		ProcessBuilder pb;
 		pb = new ProcessBuilder("git", "ls-files");
@@ -36,14 +48,14 @@ public class analysis {
 
 
 		// read the output from the command
-		System.out.println("Here is the standard output of the command:\n");
+//		System.out.println("Here is the standard output of the command:\n");
 		String s = null;
-		int num_of_files = 0;
+		num_of_files = 0;
 		while ((s = stdInput.readLine()) != null) {
 		 //   System.out.println(s);
 		    num_of_files++;
 		}
-		System.out.println("Number of files in repository: " + num_of_files);
+	//	System.out.println("Number of files in repository: " + num_of_files);
 		stdInput.close();
 		
 		//2nd
@@ -52,7 +64,6 @@ public class analysis {
 		pb.directory(new File(directory));
 		proc = pb.start();
 		
-		//TODO to confirm
 		stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		String last_line = null;
 		while ((s = stdInput.readLine()) != null) {
@@ -60,7 +71,8 @@ public class analysis {
 		    last_line = s;
 		} 
 		String[] parts = last_line.split(" ");
-		System.out.println("Total number of lines " + parts[4]);
+//		System.out.println("Total number of lines " + parts[4]);
+		num_of_lines = Integer.valueOf(parts[4]);
 		stdInput.close();
 		
 		//3rd
@@ -69,7 +81,7 @@ public class analysis {
 		pb.directory(new File(directory));
 		proc = pb.start();
 		stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-		int num_of_branches = 0;
+		num_of_branches = 0;
 		while ((s = stdInput.readLine()) != null) {
 		 //   System.out.println(s);
 		    num_of_branches++;
@@ -79,7 +91,7 @@ public class analysis {
 		    else
 			    branches.add(cleanstr[1]);
 		}
-		System.out.println("Number of branches in repository: " + num_of_branches);
+	//	System.out.println("Number of branches in repository: " + num_of_branches);
 		stdInput.close();
 		
 		
@@ -87,12 +99,12 @@ public class analysis {
 		pb.directory(new File(directory));
 		proc = pb.start();
 		stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-		int num_of_tags = 0;
+		num_of_tags = 0;
 		while ((s = stdInput.readLine()) != null) {
 		 //   System.out.println(s);
 		    num_of_tags++;
 		}
-		System.out.println("Number of tags in repository: " + num_of_tags);
+//		System.out.println("Number of tags in repository: " + num_of_tags);
 		stdInput.close();
 		
 		
@@ -115,7 +127,7 @@ public class analysis {
 		    committers.put(s, c);	    	
 		}
 		
-		System.out.println("Number of commiters in repository: " + committers.size());
+//		System.out.println("Number of commiters in repository: " + committers.size());
 		
 		Set<String> keys = committers.keySet();
 		int i=0;
@@ -125,7 +137,7 @@ public class analysis {
 		    
 		}
 		CommitCount = i;
-		System.out.println("Commit count: " + i);
+//		System.out.println("Commit count: " + i);
 		
 		stdInput.close();
 		
@@ -182,6 +194,7 @@ public class analysis {
 				StringBuilder strbuilder = new StringBuilder("");
 				while(!((s=stdInput.readLine()).equals("endofbody"))){
 					strbuilder.append(s);
+					strbuilder.append("\n");
 				}
 				commitinfo.message = strbuilder.toString();
 				
@@ -189,27 +202,73 @@ public class analysis {
 			}
 			branchinfo.creationDate = branchinfo.commitList.get(0).date;
 			branchinfo.lastModified = branchinfo.commitList.get(branchinfo.commitList.size()-1).date;
-			System.out.println(branchinfo.branchName + " Creation Date: " + branchinfo.creationDate + " \nLast Modified: " + branchinfo.lastModified + "\n");
+	//		System.out.println(branchinfo.branchName + " Creation Date: " + branchinfo.creationDate + " \nLast Modified: " + branchinfo.lastModified + "\n");
 			branchInfoArray.add(branchinfo);
 			stdInput.close();
 		}
 		
-		System.out.println("Number of commits: " + k);
+//		System.out.println("Number of commits: " + k);
 		
+		BranchStatistics();
+		calculateActiveTime(repoPath);
+		calculateNumOfChanges(repoPath);
+		InjectCode l = new InjectCode();
 
+		
+		if(outputPath.charAt(outputPath.length()-1) != '/' && outputPath.charAt(outputPath.length()-1)!='\\'){
+			outputPath = outputPath + "/";
+		}
+		l.inject(outputPath);
+		File dir = new File(outputPath + "css");
+		dir.mkdir();
+		dir = new File(outputPath + "js");
+		dir.mkdir();
+		
+		copyResourceFile("bootstrap.css", outputPath + "/css/");
+		copyResourceFile("bootstrap.css.map", outputPath + "/css/");
+		copyResourceFile("bootstrap.min.css", outputPath + "/css/");
+		copyResourceFile("bootstrap-table.css", outputPath + "/css/");
+		copyResourceFile("bootstrap-theme.css", outputPath + "/css/");
+		copyResourceFile("bootstrap-theme.css.map", outputPath + "/css/");
+		copyResourceFile("bootstrap-theme.min.css", outputPath + "/css/");
+		copyResourceFile("styles.css", outputPath + "/css/");
+		copyResourceFile("bootstrap.min.js", outputPath + "/js/");
+		copyResourceFile("chart.min.js", outputPath + "/js/");
+		copyResourceFile("chart-data.js", outputPath + "/js/");
+		copyResourceFile("easypiechart.js", outputPath + "/js/");
+		copyResourceFile("easypiechart-data.js", outputPath + "/js/");
+		copyResourceFile("jquery-1.11.1.min.js", outputPath + "/js/");
+		copyResourceFile("lumino.glyphs.js", outputPath + "/js/");
+		
 	}
 	
-	public void BranchStatistics(){
+	public static File copyResourceFile(String p, String path) throws IOException{
+		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(p);
+		
+		File f = new File(path + p);
+		
+		FileOutputStream out = new FileOutputStream(f);
+		byte[] buffer = new byte[1024];
+		int count = 0;
+		while((count = in.read(buffer)) != -1){
+			out.write(buffer, 0, count);
+		}
+		out.close();
+		
+		return f;
+	}
+	
+	public static void BranchStatistics(){
 		
 		Set<String> keys = committers.keySet();
 		for(String str: keys){
 			Committer c = committers.get(str);
-			c.commitPercentage = (double) (( c.numOfCommits / CommitCount ) * 100);
+			c.commitPercentage = (((double) c.numOfCommits / CommitCount ) * 100);
 			committers.put(str, c);
 		}
 		
 		for(BranchInfo b: branchInfoArray){
-			b.commitPercentage = (double) (( b.commitList.size() / CommitCount ) * 100);
+			b.commitPercentage =  (((double) b.commitList.size() / CommitCount ) * 100);
 			
 			HashMap<String, Integer> commitsToBranch = new HashMap<String, Integer>();
 			for(CommitInfo c: b.commitList){
@@ -224,15 +283,15 @@ public class analysis {
 			
 			keys = commitsToBranch.keySet();
 			for(String str: keys){
-				Double percentage = (double) (( commitsToBranch.get(str) / b.commitList.size() ) * 100);
+				Double percentage = (double) (((double) commitsToBranch.get(str) / b.commitList.size() ) * 100);
 				b.percentPerCommiter.put(str, percentage);
 			}
  		}
 				
 	}
 	
-	public void calculateActiveTime() throws IOException{
-		String directory = "C:\\Users\\Aruil\\Documents\\temp_git_repo\\jgit";
+	public static void calculateActiveTime(String repo) throws IOException{
+		String directory = repo;
 
 		Process proc = null;
 		ProcessBuilder pb;
@@ -258,7 +317,7 @@ public class analysis {
 		
 		Double days, months, years;
 		Integer diff = Integer.valueOf(lastDate) - Integer.valueOf(firstDate);
-		days = (double) (diff / (3600*24));
+		days =  ((double)diff / (3600*24));
 		months = days / 30 ;
 		years = months / 12;
 		
@@ -273,8 +332,8 @@ public class analysis {
 		}
 	}
 	
-	public void calculateNumOfChanges() throws IOException{
-		String directory = "C:\\Users\\Aruil\\Documents\\temp_git_repo\\jgit";
+	public static void calculateNumOfChanges(String repo) throws IOException{
+		String directory = repo;
 
 		Process proc = null;
 		ProcessBuilder pb;
@@ -294,7 +353,7 @@ public class analysis {
 				for(int i=0; i<4; i++)
 					s=stdInput.readLine();
 				
-				while (!(s = stdInput.readLine()).equals("\n")) {
+				while ((s = stdInput.readLine()) != null && !s.equals("")) {
 					
 					parts = s.split("\t");
 					if(!parts[0].equals("-")){
@@ -302,6 +361,8 @@ public class analysis {
 						numOfDeletions += Integer.valueOf(parts[1]);
 					}
 				}
+				if(s==null)
+					break;
 			}
 		}
 	}
